@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # Copyright (C) 2010 Benjamin Pollack.  All rights reserved.
 
-from __future__ import with_statement
+
 
 import datetime
 import errno
@@ -126,7 +126,7 @@ class MiniRedis(object):
             return
         items = int(line[1:].strip())
         args = []
-        for x in xrange(0, items):
+        for x in range(0, items):
             length = int(client.rfile.readline().strip()[1:])
             args.append(client.rfile.read(length))
             client.rfile.read(2) # throw out newline
@@ -145,8 +145,8 @@ class MiniRedis(object):
         server.listen(5)
         while not self.halt:
             try:
-                readable, _, _ = select.select([server] + self.clients.keys(), [], [], 1.0)
-            except select.error, e:
+                readable, _, _ = select.select([server] + list(self.clients.keys()), [], [], 1.0)
+            except select.error as e:
                 if e.args[0] == errno.EINTR:
                     continue
                 raise
@@ -160,10 +160,10 @@ class MiniRedis(object):
                 else:
                     try:
                         self.handle(self.clients[sock])
-                    except Exception, e:
+                    except Exception as e:
                         self.log(client, 'exception: %s' % e)
                         self.handle_quit(client)
-        for client_socket in self.clients.iterkeys():
+        for client_socket in self.clients.keys():
             client_socket.close()
         self.clients.clear()
         server.close()
@@ -218,7 +218,7 @@ class MiniRedis(object):
 
     def handle_flushall(self, client):
         self.log(client, 'FLUSHALL')
-        for table in self.tables.itervalues():
+        for table in self.tables.values():
             table.clear()
         return True
 
@@ -248,7 +248,7 @@ class MiniRedis(object):
     def handle_keys(self, client, pattern):
         r = re.compile(pattern.replace('*', '.*'))
         self.log(client, 'KEYS %s' % pattern)
-        return [k for k in client.table.keys() if r.search(k)]
+        return [k for k in list(client.table.keys()) if r.search(k)]
 
     def handle_lastsave(self, client):
         return self.lastsave
