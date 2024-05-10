@@ -122,6 +122,7 @@ class MiniRedis(object):
 
     def handle(self, client):
         line = client.rfile.readline().decode("utf-8")
+        print(line)
         if not line.strip():
             self.log(client, "client disconnected")
             del self.clients[client.socket]
